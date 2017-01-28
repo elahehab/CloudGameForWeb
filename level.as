@@ -11,9 +11,6 @@
 	import flash.media.Sound;
 	import flash.media.SoundMixer;
 	import flash.utils.setInterval;
-	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
-	import flash.filesystem.FileMode;
 	import flash.utils.clearInterval;
 	
 	public class level extends MovieClip {
@@ -252,11 +249,6 @@
 		public function sendJSON(levInfo:levelInfo):void
 		{
 			var dataStr:String = JSON.stringify(levInfo);
-			var file:File = File.desktopDirectory.resolvePath("CloudOutput\\" + m_ctrl.getUserEmailAddr() + ".txt");
-			var stream:FileStream = new FileStream();
-			stream.open(file, FileMode.APPEND);
-			stream.writeUTFBytes(dataStr + "\n");
-			stream.close();
 		}
 		
 		public function errorLoader(e:Event):void

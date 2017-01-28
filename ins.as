@@ -7,14 +7,17 @@
 	import fl.text.TLFTextField;
 	import flash.text.AntiAliasType;
 	import flash.events.Event;
-	import flash.filesystem.File;
-	import flash.filesystem.FileStream;
-	import flash.filesystem.FileMode;
+	import flash.events.IOErrorEvent;
+	import flash.net.URLVariables;
+	import flash.net.URLRequest;
+	import flash.net.URLRequestMethod;
+	import flash.net.URLLoader;
 	
 	public class ins extends MovieClip {
 		
 		private var onStartFunction:Function;
 		private var emailTF:TextField = new TextField();
+		private var loadingPage:LoadingPage = new LoadingPage();
 		
 		public function ins(_onStartFunction:Function) {
 			
@@ -81,15 +84,10 @@
 				return;
 			}
 			
-			var fileName:String = "CloudOutput\\" + emailTF.text + ".txt";
+			loadingPage.x = -400; loadingPage.y = -270;
+			addChild(loadingPage);
 			
-			var file:File = File.desktopDirectory.resolvePath(fileName);
-			var stream:FileStream = new FileStream();
-			trace(fileName);
-			stream.open(file, FileMode.APPEND);
-			stream.close();
-			
-			onStartFunction();
+			saveUserEmail();
 		}
 		
 		private function isValidEmail(email:String):Boolean {
@@ -97,9 +95,45 @@
 			return emailExpression.test(email);
 		}
 		
+		private function saveUserEmail():void {
+			var vars: URLVariables = new URLVariables();
+			vars.email = emailTF.text;
+			
+			var req: URLRequest = new URLRequest();
+			req.method      = URLRequestMethod.POST;
+			req.data        = vars;
+			req.url         = "http://127.0.0.1:5000/addUser";
+
+			var loader:URLLoader = new URLLoader();
+			loader.addEventListener(Event.COMPLETE, onDataSent);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+			loader.load(req);
+		}
+		
 		public function getEmail():String {
 			return emailTF.text;
 		}
+		
+		private function onDataSent(e:Event):void {
+			trace("data sent successfuly");
+			removeChild(loadingPage);
+			if(e.target.data == "True") {
+				trace("true")
+				onStartFunction();
+			} else {
+				trace("false")
+			}
+		}
+		
+		private function ioErrorHandler(e:IOErrorEvent):void {
+			removeChild(loadingPage);
+			var conErr:ConnectionError = new ConnectionError();
+			conErr.x = -205;
+			conErr.y = 250;
+			addChild(conErr);
+			trace("data wasn't sent")
+		}
+		
 	}
 	
 }
