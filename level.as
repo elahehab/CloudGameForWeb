@@ -12,6 +12,7 @@
 	import flash.media.SoundMixer;
 	import flash.utils.setInterval;
 	import flash.utils.clearInterval;
+	import flash.events.IOErrorEvent;
 	
 	public class level extends MovieClip {
 		
@@ -249,6 +250,27 @@
 		public function sendJSON(levInfo:levelInfo):void
 		{
 			var dataStr:String = JSON.stringify(levInfo);
+			var vars: URLVariables = new URLVariables();
+			vars.email = this.m_ctrl.getUserEmailAddr();
+			vars.data = dataStr;
+			
+			var req: URLRequest = new URLRequest();
+			req.method      = URLRequestMethod.POST;
+			req.data        = vars;
+			req.url         = "http://127.0.0.1:5000/addGameData";
+
+			var loader:URLLoader = new URLLoader();
+			loader.addEventListener(Event.COMPLETE, onDataSent);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+			loader.load(req);
+		}
+		
+		private function onDataSent(e:Event):void {
+			trace("data sent successfuly... " + e.target.data)
+		}
+		
+		private function ioErrorHandler(e:Event):void {
+			trace("error sending data")
 		}
 		
 		public function errorLoader(e:Event):void
